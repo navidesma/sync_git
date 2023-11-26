@@ -4,10 +4,7 @@ from run_command import (
     check_if_branch_is_ahead_or_behind_or_diverged,
 )
 
-project_directories = [
-    "ADD_YOUR_PROJECT_NAMES_HERE",
-]
-
+from project_directories import project_directories
 
 for project_name in project_directories:
     run_command(
@@ -30,4 +27,4 @@ for project_name in project_directories:
         action_func=check_if_branch_is_ahead_or_behind_or_diverged,
     )
     
-print("\n Your projects were synced.")
+print("\n Your projects are synced.")

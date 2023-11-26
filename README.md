@@ -14,7 +14,7 @@ git clone https://github.com/navidesma/sync_git
 
 2. Define your projects directory
 
-In `main.py`:
+In `project_directories.py`:
 
 ```python
 project_directories = [
