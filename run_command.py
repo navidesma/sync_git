@@ -15,16 +15,24 @@ base_dir = join(getcwd(), "..")
 
 
 def print_status(*status):
-    print("\n______________________\n", *status, "\n______________________\n")
+    print("\n", *status, "\n")
 
 
-def check_clean_tree(output: str, project_path: list[str]):
+def check_clean_tree(output: str, project_path: list[str], break_the_loop: bool):
     if CLEAN_TREE_STRING not in output:
-        print_status(project_path[-1], " tree is not clean")
-        raise Exception()
+        print_status(
+            f"!!!!!!!!!!!!!!!!!\n{project_path[-1]} tree is not clean\n!!!!!!!!!!!!!!!!!"
+        )
+        break_the_loop = True
 
 
-def run_command(command: str, action_name: str, project_path: list[str], action_func=None):
+def run_command(
+    command: str,
+    action_name: str,
+    project_path: list[str],
+    break_the_loop: bool,
+    action_func=None,
+):
     command = subprocess.Popen(
         cwd=join(base_dir, *project_path),
         args=command,
@@ -45,10 +53,14 @@ def run_command(command: str, action_name: str, project_path: list[str], action_
     output_str = str(output)
 
     if action_func is not None:
-        action_func(output=output_str, project_path=project_path)
+        action_func(
+            output=output_str, project_path=project_path, break_the_loop=break_the_loop
+        )
 
 
-def check_if_branch_is_ahead_or_behind_or_diverged(output: str, project_path: list[str]):
+def check_if_branch_is_ahead_or_behind_or_diverged(
+    output: str, project_path: list[str], break_the_loop: bool
+):
     if BRANCH_UP_TO_DATE not in output:
         if re.search(DIVERGED_BRANCH_REGEX, output):
             print_status(
@@ -57,6 +69,7 @@ def check_if_branch_is_ahead_or_behind_or_diverged(output: str, project_path: li
                 " is diverged:\n use git pull --rebase or git push -f origin <YOUR_BRANCH_NAME>",
                 "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",
             )
+            break_the_loop = True
 
         if BRANCH_AHEAD in output:
             print_status(project_path[-1], " is ahead, running git push...")
@@ -64,6 +77,7 @@ def check_if_branch_is_ahead_or_behind_or_diverged(output: str, project_path: li
                 action_name="running push action",
                 command="git push",
                 project_path=project_path,
+                break_the_loop=break_the_loop,
             )
 
         if BRANCH_BEHIND in output:
@@ -72,4 +86,5 @@ def check_if_branch_is_ahead_or_behind_or_diverged(output: str, project_path: li
                 action_name="running push action",
                 command="git pull",
                 project_path=project_path,
+                break_the_loop=break_the_loop,
             )
