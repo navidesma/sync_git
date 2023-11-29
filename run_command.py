@@ -18,19 +18,22 @@ def print_status(*status):
     print("\n", *status, "\n")
 
 
-def check_clean_tree(output: str, project_path: list[str], break_the_loop: bool):
+class BreakTheLoop(Exception):
+    pass
+
+
+def check_clean_tree(output: str, project_path: list[str]):
     if CLEAN_TREE_STRING not in output:
         print_status(
             f"!!!!!!!!!!!!!!!!!\n{project_path[-1]} tree is not clean\n!!!!!!!!!!!!!!!!!"
         )
-        break_the_loop = True
+        raise BreakTheLoop
 
 
 def run_command(
     command: str,
     action_name: str,
     project_path: list[str],
-    break_the_loop: bool,
     action_func=None,
 ):
     command = subprocess.Popen(
@@ -53,13 +56,11 @@ def run_command(
     output_str = str(output)
 
     if action_func is not None:
-        action_func(
-            output=output_str, project_path=project_path, break_the_loop=break_the_loop
-        )
+        action_func(output=output_str, project_path=project_path)
 
 
 def check_if_branch_is_ahead_or_behind_or_diverged(
-    output: str, project_path: list[str], break_the_loop: bool
+    output: str, project_path: list[str]
 ):
     if BRANCH_UP_TO_DATE not in output:
         if re.search(DIVERGED_BRANCH_REGEX, output):
@@ -69,7 +70,7 @@ def check_if_branch_is_ahead_or_behind_or_diverged(
                 " is diverged:\n use git pull --rebase or git push -f origin <YOUR_BRANCH_NAME>",
                 "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",
             )
-            break_the_loop = True
+            raise BreakTheLoop
 
         if BRANCH_AHEAD in output:
             print_status(project_path[-1], " is ahead, running git push...")
@@ -77,7 +78,6 @@ def check_if_branch_is_ahead_or_behind_or_diverged(
                 action_name="running push action",
                 command="git push",
                 project_path=project_path,
-                break_the_loop=break_the_loop,
             )
 
         if BRANCH_BEHIND in output:
@@ -86,5 +86,4 @@ def check_if_branch_is_ahead_or_behind_or_diverged(
                 action_name="running push action",
                 command="git pull",
                 project_path=project_path,
-                break_the_loop=break_the_loop,
             )
