@@ -83,7 +83,7 @@ def check_if_branch_is_ahead_or_behind_or_diverged(
         if BRANCH_BEHIND in output:
             print_status(project_path[-1], " is behind, running git pull...")
             run_command(
-                action_name="running push action",
+                action_name="running pull action",
                 command="git pull",
                 project_path=project_path,
             )
